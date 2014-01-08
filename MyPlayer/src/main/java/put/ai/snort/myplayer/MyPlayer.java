@@ -18,7 +18,7 @@ public class MyPlayer extends Player {
 
 	private List <Integer> values;
 
-	private int INF = Integer.MAX_VALUE;
+	private int INF = 1000000;
 	private int time_stock = 300;
 
 	public MyPlayer() {
@@ -38,28 +38,30 @@ public class MyPlayer extends Player {
 
 		MyPlayerTimer.initTimer(getTime());
 
-		int current_max = -INF;
 		int current_level = 1; // glebokosc przegladania
 		int result;
 
 		long iter_start;
 		long last_iter_duration = 0;
+		
+		Move best_move = null;
 
 		while(MyPlayerTimer.timeLeft() > time_stock) {
 			iter_start = MyPlayerTimer.timeLeft();
 			result = maxMove(b, current_level, -INF, INF, true);
-			if(MyPlayerTimer.timeLeft() > time_stock)
-				current_max = max(current_max, result);
 			last_iter_duration = iter_start - MyPlayerTimer.timeLeft();
-			System.out.print(
-					"Finished iteration at level: [" + current_level +
-					"] it took: [" + last_iter_duration +
-					"] current max: [" + current_max +
-					"]ms\n");
+			if(MyPlayerTimer.timeLeft() > time_stock) {
+				best_move = getOneOfBest(b, result);
+				System.out.print(
+						"Finished iteration at level: [" + current_level +
+						"] it took: [" + last_iter_duration +
+						"]ms result: [" + result +
+						"]\n");
+			}
 			current_level++;
 		}
 
-		return getOneOfBest(b, current_max);
+		return best_move;
 	}
 	
 	
