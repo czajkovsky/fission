@@ -17,11 +17,11 @@ public class MyPlayer extends Player {
 	private Random random = new Random(0xdeadbeef);
 
 	private List <Integer> values;
-	
+
 	public MyPlayer() {
 		values = new ArrayList <Integer>();
 	}
-	
+
 	@Override
 	public String getName() {
 		return "alfa beta";
@@ -32,45 +32,47 @@ public class MyPlayer extends Player {
 
 	@Override
 	public Move nextMove(Board b) {
-		
-		int level = 5; // glebokosc przegladania
-		int result = maxMove(b, level, Integer.MIN_VALUE, Integer.MAX_VALUE, true);	
 
+		int level = 5; // glebokosc przegladania
+		int result = maxMove(b, level, Integer.MIN_VALUE, Integer.MAX_VALUE, true);
+		
+		MyPlayerTimer.initTimer(getTime());
+		
 		return getOneOfBest(b, result);
 	}
-	
+
 	/**
 	 * Funkcja zwraca losowy sposrod najlepszych wynikow
 	 */
 	public Move getOneOfBest(Board b, int result) {
 		List<Move> moves = b.getMovesFor(getColor());
-		
+
 		List<Move> bestMoves = new ArrayList<Move>();
 		for (int i=0; i<values.size(); ++i) {
 			if(values.get(i) == result)
 				bestMoves.add(moves.get(i));
 		}
-		
+
 		return bestMoves.get(random.nextInt(bestMoves.size()));
 	}
-	
+
 
 	/**
 	 * Ruch gracza max
 	 */
 	public int maxMove(Board board, int level, int alpha, int beta, boolean initial) {
 		List<Move> moves = board.getMovesFor(getColor());
-		
+
 		int value;
-		
-		if(initial == true) 
+
+		if(initial == true)
 			values.clear();
-		
+
 		// jesli nie ma juz pionkow
 		if (moves.size() == 0)
 			if (this.count(getColor(), board) == 0) {
 				return Integer.MIN_VALUE;
-			}	
+			}
 			else {
 				return Integer.MAX_VALUE;
 			}
@@ -80,14 +82,14 @@ public class MyPlayer extends Player {
 			for (int i = 0; i < moves.size(); ++i) {
 				Board b = board.clone();
 				b.doMove(moves.get(i));
-				
+
 				value = minMove(b, level - 1, alpha, beta);
 				alpha = max(value, alpha);
-				
+
 				if(initial == true) {
 					this.values.add(value);
 				}
-				
+
 				if (alpha >= beta) //odciecie beta
 					return beta;
 			}
@@ -95,7 +97,7 @@ public class MyPlayer extends Player {
 			for (int i = 0; i < moves.size(); ++i) {
 				Board b = board.clone();
 				b.doMove(moves.get(i));
-								
+
 				value = this.evaluateMove(board, b);
 				alpha = max(value, alpha);
 
@@ -105,18 +107,18 @@ public class MyPlayer extends Player {
 		}
 		return alpha;
 	}
-	
+
 	/**
 	 * Ruch gracza min
 	 */
 	public int minMove(Board board, int level, int alpha, int beta) {
 		List<Move> moves = board.getMovesFor(getOpponent(getColor()));
-		
+
 		// jesli nie ma juz pionkow
 		if (moves.size() == 0)
 			if (this.count(getColor(), board) == 0) {
 				return Integer.MIN_VALUE;
-			}	
+			}
 			else {
 				return Integer.MAX_VALUE;
 			}
@@ -127,10 +129,10 @@ public class MyPlayer extends Player {
 			for (int i = 0; i < moves.size(); ++i) {
 				Board b = board.clone();
 				b.doMove(moves.get(i));
-				
+
 				value = maxMove(b, level - 1, alpha, beta, false);
 				beta = min(value, beta);
-				
+
 				if (alpha >= beta)
 					return alpha;
 			}
@@ -138,10 +140,10 @@ public class MyPlayer extends Player {
 			for (int i = 0; i < moves.size(); ++i) {
 				Board b = board.clone();
 				b.doMove(moves.get(i));
-				
+
 				value = this.evaluateMove(board, b);
 				beta = min(value, beta);
-				
+
 				if (alpha >= beta)
 					return alpha;
 			}
