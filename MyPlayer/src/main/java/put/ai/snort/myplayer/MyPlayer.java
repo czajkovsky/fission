@@ -40,23 +40,29 @@ public class MyPlayer extends Player {
 
 		int current_max = -INF;
 		int current_level = 1; // glebokosc przegladania
+		int result;
 
 		long iter_start;
 		long last_iter_duration = 0;
 
 		while(MyPlayerTimer.timeLeft() > time_stock) {
 			iter_start = MyPlayerTimer.timeLeft();
-			current_max = max(current_max, maxMove(b, current_level, -INF, INF, true));
+			result = maxMove(b, current_level, -INF, INF, true);
+			if(MyPlayerTimer.timeLeft() > time_stock)
+				current_max = max(current_max, result);
 			last_iter_duration = iter_start - MyPlayerTimer.timeLeft();
 			System.out.print(
 					"Finished iteration at level: [" + current_level +
 					"] it took: [" + last_iter_duration +
+					"] current max: [" + current_max +
 					"]ms\n");
 			current_level++;
 		}
 
 		return getOneOfBest(b, current_max);
 	}
+	
+	
 
 	/**
 	 * Funkcja zwraca losowy sposrod najlepszych wynikow
