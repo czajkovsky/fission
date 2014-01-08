@@ -18,6 +18,9 @@ public class MyPlayer extends Player {
 
 	private List <Integer> values;
 
+	private int INF = Integer.MAX_VALUE;
+	private int time_stock = 300;
+
 	public MyPlayer() {
 		values = new ArrayList <Integer>();
 	}
@@ -33,12 +36,26 @@ public class MyPlayer extends Player {
 	@Override
 	public Move nextMove(Board b) {
 
-		int level = 5; // glebokosc przegladania
-		int result = maxMove(b, level, Integer.MIN_VALUE, Integer.MAX_VALUE, true);
-		
 		MyPlayerTimer.initTimer(getTime());
-		
-		return getOneOfBest(b, result);
+
+		int current_max = -INF;
+		int current_level = 1; // glebokosc przegladania
+
+		long iter_start;
+		long last_iter_duration = 0;
+
+		while(MyPlayerTimer.timeLeft() > time_stock) {
+			iter_start = MyPlayerTimer.timeLeft();
+			current_max = max(current_max, maxMove(b, current_level, -INF, INF, true));
+			last_iter_duration = iter_start - MyPlayerTimer.timeLeft();
+			System.out.print(
+					"Finished iteration at level: [" + current_level +
+					"] it took: [" + last_iter_duration +
+					"]ms\n");
+			current_level++;
+		}
+
+		return getOneOfBest(b, current_max);
 	}
 
 	/**
@@ -64,6 +81,10 @@ public class MyPlayer extends Player {
 		List<Move> moves = board.getMovesFor(getColor());
 
 		int value;
+
+		// jak nie przerwiemy, to nie zdazymy nic zwrocic
+		if(MyPlayerTimer.timeLeft() < time_stock)
+			return alpha;
 
 		if(initial == true)
 			values.clear();
@@ -113,6 +134,10 @@ public class MyPlayer extends Player {
 	 */
 	public int minMove(Board board, int level, int alpha, int beta) {
 		List<Move> moves = board.getMovesFor(getOpponent(getColor()));
+
+		// jak nie przerwiemy, to nie zdazymy nic zwrocic
+		if(MyPlayerTimer.timeLeft() < time_stock)
+			return beta;
 
 		// jesli nie ma juz pionkow
 		if (moves.size() == 0)
