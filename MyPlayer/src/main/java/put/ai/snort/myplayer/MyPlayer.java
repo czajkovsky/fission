@@ -20,6 +20,8 @@ public class MyPlayer extends Player {
 
 	private int INF = 1000000;
 	private int time_stock = 300;
+	
+	MyPlayerResult current_result = new MyPlayerResult(-INF, null);
 
 	public MyPlayer() {
 		values = new ArrayList <Integer>();
@@ -37,6 +39,7 @@ public class MyPlayer extends Player {
 	public Move nextMove(Board b) {
 
 		MyPlayerTimer.initTimer(getTime());
+		
 
 		int current_level = 1; // glebokosc przegladania
 		int result;
@@ -45,12 +48,12 @@ public class MyPlayer extends Player {
 		long last_iter_duration = 0;
 		
 		Move best_move = null;
-
+		
 		while(MyPlayerTimer.timeLeft() > time_stock) {
 			iter_start = MyPlayerTimer.timeLeft();
 			result = maxMove(b, current_level, -INF, INF, true);
 			last_iter_duration = iter_start - MyPlayerTimer.timeLeft();
-			if(MyPlayerTimer.timeLeft() > time_stock) {
+			if(current_level <= b.getSize() * b.getSize() && MyPlayerTimer.timeLeft() > time_stock) {
 				best_move = getOneOfBest(b, result);
 				System.out.print(
 						"Finished iteration at level: [" + current_level +
