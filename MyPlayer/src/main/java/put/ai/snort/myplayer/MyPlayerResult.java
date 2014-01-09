@@ -26,7 +26,7 @@ public class MyPlayerResult {
 		this.move = move;
 	}
 	
-	public void updateResult(int value, Move move) {
+	public void update(int value, Move move) {
 		this.move = move;
 		this.value = value;
 	}

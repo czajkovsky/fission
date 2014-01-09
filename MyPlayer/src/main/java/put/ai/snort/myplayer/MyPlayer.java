@@ -21,8 +21,9 @@ public class MyPlayer extends Player {
 	private int INF = 1000000;
 	private int time_stock = 300;
 	
-	MyPlayerResult current_result = new MyPlayerResult(-INF, null);
-
+	private Color my_color;
+	private Color opponent_color;
+	
 	public MyPlayer() {
 		values = new ArrayList <Integer>();
 	}
@@ -43,12 +44,14 @@ public class MyPlayer extends Player {
 
 		int current_level = 1; // glebokosc przegladania
 		int result;
+		
+		MyPlayerResult current_best;
 
 		long iter_start;
 		long last_iter_duration = 0;
 		
 		Move best_move = null;
-		
+		/*
 		while(MyPlayerTimer.timeLeft() > time_stock) {
 			iter_start = MyPlayerTimer.timeLeft();
 			result = maxMove(b, current_level, -INF, INF, true);
@@ -63,8 +66,19 @@ public class MyPlayer extends Player {
 			}
 			current_level++;
 		}
-
-		return best_move;
+		*/
+		
+		initColors();
+		current_best = alphaBeta(b, 4, -INF, INF, true, my_color);
+		
+		System.out.print("result: " + current_best.returnValue() + "\n");
+		
+		return current_best.returnMove();
+	}
+	
+	public void initColors() {
+		my_color = getColor();
+		opponent_color = getOpponent(my_color);
 	}
 	
 	
@@ -82,6 +96,64 @@ public class MyPlayer extends Player {
 		}
 
 		return bestMoves.get(random.nextInt(bestMoves.size()));
+	}
+	
+	public MyPlayerResult alphaBeta(Board board, int level, int alpha, int beta, boolean initial, Color current_color) {
+
+		MyPlayerResult result = new MyPlayerResult(-INF, null);
+		MyPlayerResult tmp_result;
+		int value;
+		
+		// jak nie przerwiemy, to nie zdazymy nic zwrocic
+		// zwrócona wartość nie ma znaczenia, bo i tak ją odrzucimy
+		//if (MyPlayerTimer.timeLeft() < time_stock)
+		//	return result;
+		
+		List<Move> moves = board.getMovesFor(current_color);
+		level--;
+		
+		// jesli nie ma juz pionkow
+		if (moves.size() == 0) {
+			if (current_color == my_color) result.update(-INF, null);
+			else result.update(INF, null);
+			return result;
+		}
+				
+		for (int i = 0; i < moves.size(); ++i) {
+			Board b = board.clone();
+			b.doMove(moves.get(i));
+			
+			if (level < 1) { // to już ostatni poziom
+				value = this.evaluateMove(board, b);
+				result.setValue(value);
+				return result;
+			}
+			else { // idziemy dalej
+			
+				if (current_color == my_color) { // MAX type
+					tmp_result = alphaBeta(b, level, alpha, beta, false, opponent_color);
+					
+					if(tmp_result.returnValue() > alpha) {
+						alpha = tmp_result.returnValue();
+						result.update(alpha, moves.get(i));
+					}
+						
+				}
+				else { // MIN TYPE
+					tmp_result = alphaBeta(b, level, alpha, beta, false, my_color);
+					
+					if(tmp_result.returnValue() < beta) {
+						beta = tmp_result.returnValue();
+						result.update(beta, moves.get(i));
+					}
+					
+				}
+				
+				if (alpha >= beta) // odciecie
+					return result;
+			}
+		}
+		return result;
 	}
 
 
