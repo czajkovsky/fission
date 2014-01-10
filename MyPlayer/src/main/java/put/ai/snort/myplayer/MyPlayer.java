@@ -4,9 +4,7 @@
  */
 package put.ai.snort.myplayer;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 import put.ai.snort.game.Board;
 import put.ai.snort.game.Move;
@@ -14,19 +12,11 @@ import put.ai.snort.game.Player;
 
 public class MyPlayer extends Player {
 
-	private Random random = new Random(0xdeadbeef);
-
-	private List <Integer> values;
-
 	private int INF = 1000000;
 	private int time_stock = 300;
 	
 	private Color my_color;
 	private Color opponent_color;
-	
-	public MyPlayer() {
-		values = new ArrayList <Integer>();
-	}
 
 	@Override
 	public String getName() {
@@ -73,24 +63,7 @@ public class MyPlayer extends Player {
 		my_color = getColor();
 		opponent_color = getOpponent(my_color);
 	}
-	
-	
 
-	/**
-	 * Funkcja zwraca losowy sposrod najlepszych wynikow
-	 */
-	public Move getOneOfBest(Board b, int result) {
-		List<Move> moves = b.getMovesFor(getColor());
-
-		List<Move> bestMoves = new ArrayList<Move>();
-		for (int i=0; i<values.size(); ++i) {
-			if(values.get(i) == result)
-				bestMoves.add(moves.get(i));
-		}
-
-		return bestMoves.get(random.nextInt(bestMoves.size()));
-	}
-	
 	public MyPlayerResult alphaBeta(Board board, int level, int alpha, int beta, boolean initial, Color current_color) {
 
 		MyPlayerResult result = new MyPlayerResult(-INF, null);
@@ -119,7 +92,7 @@ public class MyPlayer extends Player {
 			b.doMove(moves.get(i));
 			
 			if (level < 1) { // to już ostatni poziom
-				value = this.evaluateMove(board, b);
+				value = this.evaluateSituation(b);
 				result.update(value, moves.get(i));
 				return result;
 			}
@@ -156,7 +129,7 @@ public class MyPlayer extends Player {
 	 * Ruch gracza max
 	 */
 	public int maxMove(Board board, int level, int alpha, int beta, boolean initial) {
-		List<Move> moves = board.getMovesFor(getColor());
+		List<Move> moves = board.getMovesFor(my_color);
 
 		int value;
 
@@ -164,17 +137,13 @@ public class MyPlayer extends Player {
 		if(MyPlayerTimer.timeLeft() < time_stock)
 			return alpha;
 
-		if(initial == true)
-			values.clear();
-
 		// jesli nie ma juz pionkow
 		if (moves.size() == 0)
-			if (this.count(getColor(), board) == 0) {
-				return Integer.MIN_VALUE;
-			}
-			else {
-				return Integer.MAX_VALUE;
-			}
+			if (this.count(my_color, board) == 0)
+				return -INF;
+			else
+				return INF;
+			
 
 		// szukanie maksymalnej wartosci wsrod ruchow gracza min
 		if (level > 0) {
@@ -185,10 +154,6 @@ public class MyPlayer extends Player {
 				value = minMove(b, level - 1, alpha, beta);
 				alpha = max(value, alpha);
 
-				if(initial == true) {
-					this.values.add(value);
-				}
-
 				if (alpha >= beta) //odciecie beta
 					return beta;
 			}
@@ -197,7 +162,7 @@ public class MyPlayer extends Player {
 				Board b = board.clone();
 				b.doMove(moves.get(i));
 
-				value = this.evaluateMove(board, b);
+				value = this.evaluateSituation(b);
 				alpha = max(value, alpha);
 
 				if (alpha >= beta)
@@ -211,7 +176,7 @@ public class MyPlayer extends Player {
 	 * Ruch gracza min
 	 */
 	public int minMove(Board board, int level, int alpha, int beta) {
-		List<Move> moves = board.getMovesFor(getOpponent(getColor()));
+		List<Move> moves = board.getMovesFor(opponent_color);
 
 		// jak nie przerwiemy, to nie zdazymy nic zwrocic
 		if(MyPlayerTimer.timeLeft() < time_stock)
@@ -219,12 +184,11 @@ public class MyPlayer extends Player {
 
 		// jesli nie ma juz pionkow
 		if (moves.size() == 0)
-			if (this.count(getColor(), board) == 0) {
-				return Integer.MIN_VALUE;
-			}
-			else {
-				return Integer.MAX_VALUE;
-			}
+			if (this.count(my_color, board) == 0)
+				return -INF;
+			else
+				return INF;
+		
 		int value;
 
 		// szukanie minimalnej wartosci wsrod ruchow gracza max
@@ -244,7 +208,7 @@ public class MyPlayer extends Player {
 				Board b = board.clone();
 				b.doMove(moves.get(i));
 
-				value = this.evaluateMove(board, b);
+				value = this.evaluateSituation(b);
 				beta = min(value, beta);
 
 				if (alpha >= beta)
@@ -282,10 +246,10 @@ public class MyPlayer extends Player {
 	 * Funkcja zwraca roznice pomiedzy iloscia zbitych pionkow przeciwnika i
 	 * sztucznej inteligencji
 	 */
-	public int evaluateMove(Board board1, Board board2) {
-		int myLost = lostPawns(board1, board2, getColor());
-		int opponentLost = lostPawns(board1, board2, getOpponent(getColor()));
-		return opponentLost - myLost;
+	public int evaluateSituation(Board board) {
+		int my = count(my_color, board);
+		int opponent = count(opponent_color, board);
+		return my - opponent;
 	}
 
 	public int min(int a, int b) {
