@@ -49,13 +49,11 @@ public class MyPlayer extends Player {
 						"]ms move: [" + tmp_result.returnMove() +
 						"] with value: [" + tmp_result.returnValue() +
 						"]\n");
-				// tymczasowe rozwiązanie
-				if (tmp_result.returnValue() > -INF / 10 && tmp_result.returnValue() < INF / 10)
-					final_result.setMove(tmp_result.returnMove());
+				final_result = tmp_result;
 			}
 			current_level++;
 		}
-		System.out.print("Returning shit...\n");
+		System.out.print("Returning move..." + final_result.returnMove() + "\n");
 		return final_result.returnMove();
 	}
 	
@@ -66,27 +64,29 @@ public class MyPlayer extends Player {
 
 	public MyPlayerResult alphaBeta(Board board, int level, int alpha, int beta, boolean initial, Color current_color) {
 
-		MyPlayerResult result = new MyPlayerResult(-INF, null);
-		MyPlayerResult tmp_result;
-		int value;
+		MyPlayerResult result = new MyPlayerResult(INF - 1, null);
 		
 		// jak nie przerwiemy, to nie zdazymy nic zwrocic
 		// zwrócona wartość nie ma znaczenia, bo i tak ją odrzucimy
-		if (MyPlayerTimer.timeLeft() < time_stock) {
+		if (MyPlayerTimer.timeLeft() < time_stock)
 			return result;
-		}
-			
+		
+		if (current_color == my_color)
+			result.setValue(-INF + 1);
+		else
+			result.setValue(INF - 1);
 		
 		List<Move> moves = board.getMovesFor(current_color);
-		level--;
 		
 		// jesli nie ma juz pionkow
 		if (moves.size() == 0) {
-			if (current_color == my_color) result.update(-INF, null);
-			else result.update(INF, null);
 			return result;
 		}
-				
+		
+		MyPlayerResult tmp_result;
+		int value;
+		level--;
+		
 		for (int i = 0; i < moves.size(); ++i) {
 			Board b = board.clone();
 			b.doMove(moves.get(i));
@@ -144,7 +144,6 @@ public class MyPlayer extends Player {
 			else
 				return INF;
 			
-
 		// szukanie maksymalnej wartosci wsrod ruchow gracza min
 		if (level > 0) {
 			for (int i = 0; i < moves.size(); ++i) {
