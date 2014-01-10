@@ -40,40 +40,33 @@ public class MyPlayer extends Player {
 	public Move nextMove(Board b) {
 
 		MyPlayerTimer.initTimer(getTime());
+		initColors();
 		
-
 		int current_level = 1; // glebokosc przegladania
-		int result;
-		
-		MyPlayerResult current_best;
-
 		long iter_start;
 		long last_iter_duration = 0;
 		
-		Move best_move = null;
-		/*
+		MyPlayerResult tmp_result, final_result = new MyPlayerResult(-INF, null);
+
 		while(MyPlayerTimer.timeLeft() > time_stock) {
 			iter_start = MyPlayerTimer.timeLeft();
-			result = maxMove(b, current_level, -INF, INF, true);
+			tmp_result = alphaBeta(b, current_level, -INF, INF, true, my_color);
 			last_iter_duration = iter_start - MyPlayerTimer.timeLeft();
 			if(current_level <= b.getSize() * b.getSize() && MyPlayerTimer.timeLeft() > time_stock) {
-				best_move = getOneOfBest(b, result);
 				System.out.print(
 						"Finished iteration at level: [" + current_level +
 						"] it took: [" + last_iter_duration +
-						"]ms result: [" + result +
+						"]ms move: [" + tmp_result.returnMove() +
+						"] with value: [" + tmp_result.returnValue() +
 						"]\n");
+				// tymczasowe rozwiązanie
+				if (tmp_result.returnValue() > -INF / 10 && tmp_result.returnValue() < INF / 10)
+					final_result.setMove(tmp_result.returnMove());
 			}
 			current_level++;
 		}
-		*/
-		
-		initColors();
-		current_best = alphaBeta(b, 4, -INF, INF, true, my_color);
-		
-		System.out.print("result: " + current_best.returnValue() + "\n");
-		
-		return current_best.returnMove();
+		System.out.print("Returning shit...\n");
+		return final_result.returnMove();
 	}
 	
 	public void initColors() {
@@ -106,8 +99,10 @@ public class MyPlayer extends Player {
 		
 		// jak nie przerwiemy, to nie zdazymy nic zwrocic
 		// zwrócona wartość nie ma znaczenia, bo i tak ją odrzucimy
-		//if (MyPlayerTimer.timeLeft() < time_stock)
-		//	return result;
+		if (MyPlayerTimer.timeLeft() < time_stock) {
+			return result;
+		}
+			
 		
 		List<Move> moves = board.getMovesFor(current_color);
 		level--;
@@ -125,7 +120,7 @@ public class MyPlayer extends Player {
 			
 			if (level < 1) { // to już ostatni poziom
 				value = this.evaluateMove(board, b);
-				result.setValue(value);
+				result.update(value, moves.get(i));
 				return result;
 			}
 			else { // idziemy dalej
