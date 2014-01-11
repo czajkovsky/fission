@@ -36,13 +36,15 @@ public class MyPlayer extends Player {
 		long iter_start;
 		long last_iter_duration = 0;
 		
+		int board_size = b.getSize() * b.getSize();
+		
 		MyPlayerResult tmp_result, final_result = new MyPlayerResult(-INF, null);
 
 		while(MyPlayerTimer.timeLeft() > time_stock) {
 			iter_start = MyPlayerTimer.timeLeft();
 			tmp_result = alphaBeta(b, current_level, -INF, INF, true, my_color);
 			last_iter_duration = iter_start - MyPlayerTimer.timeLeft();
-			if(current_level <= b.getSize() * b.getSize() && MyPlayerTimer.timeLeft() > time_stock) {
+			if(current_level <= board_size && MyPlayerTimer.timeLeft() > time_stock) {
 				System.out.print(
 						"Finished iteration at level: [" + current_level +
 						"] it took: [" + last_iter_duration +
@@ -50,6 +52,10 @@ public class MyPlayer extends Player {
 						"] with value: [" + tmp_result.returnValue() +
 						"]\n");
 				final_result = tmp_result;
+				if (final_result.returnValue() > board_size) {
+					System.out.print("We found winning strategion..." + final_result.returnMove() + "\n");
+					return final_result.returnMove();
+				}
 			}
 			current_level++;
 		}
