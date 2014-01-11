@@ -130,99 +130,6 @@ public class MyPlayer extends Player {
 		return result;
 	}
 
-
-	/**
-	 * Ruch gracza max
-	 */
-	public int maxMove(Board board, int level, int alpha, int beta, boolean initial) {
-		List<Move> moves = board.getMovesFor(my_color);
-
-		int value;
-
-		// jak nie przerwiemy, to nie zdazymy nic zwrocic
-		if(MyPlayerTimer.timeLeft() < time_stock)
-			return alpha;
-
-		// jesli nie ma juz pionkow
-		if (moves.size() == 0)
-			if (this.count(my_color, board) == 0)
-				return -INF;
-			else
-				return INF;
-			
-		// szukanie maksymalnej wartosci wsrod ruchow gracza min
-		if (level > 0) {
-			for (int i = 0; i < moves.size(); ++i) {
-				Board b = board.clone();
-				b.doMove(moves.get(i));
-
-				value = minMove(b, level - 1, alpha, beta);
-				alpha = max(value, alpha);
-
-				if (alpha >= beta) //odciecie beta
-					return beta;
-			}
-		} else { // jesli to juz ostatni poziom przeszukiwania
-			for (int i = 0; i < moves.size(); ++i) {
-				Board b = board.clone();
-				b.doMove(moves.get(i));
-
-				value = this.evaluateSituation(b);
-				alpha = max(value, alpha);
-
-				if (alpha >= beta)
-					return beta;
-			}
-		}
-		return alpha;
-	}
-
-	/**
-	 * Ruch gracza min
-	 */
-	public int minMove(Board board, int level, int alpha, int beta) {
-		List<Move> moves = board.getMovesFor(opponent_color);
-
-		// jak nie przerwiemy, to nie zdazymy nic zwrocic
-		if(MyPlayerTimer.timeLeft() < time_stock)
-			return beta;
-
-		// jesli nie ma juz pionkow
-		if (moves.size() == 0)
-			if (this.count(my_color, board) == 0)
-				return -INF;
-			else
-				return INF;
-		
-		int value;
-
-		// szukanie minimalnej wartosci wsrod ruchow gracza max
-		if (level > 0) {
-			for (int i = 0; i < moves.size(); ++i) {
-				Board b = board.clone();
-				b.doMove(moves.get(i));
-
-				value = maxMove(b, level - 1, alpha, beta, false);
-				beta = min(value, beta);
-
-				if (alpha >= beta)
-					return alpha;
-			}
-		} else { // jesli to juz ostatni poziom przeszukiwania
-			for (int i = 0; i < moves.size(); ++i) {
-				Board b = board.clone();
-				b.doMove(moves.get(i));
-
-				value = this.evaluateSituation(b);
-				beta = min(value, beta);
-
-				if (alpha >= beta)
-					return alpha;
-			}
-		}
-		return beta;
-	}
-
 	/**
 	 * Zwraca liczbe pionkow na planszy w danym kolorze
 	 */
@@ -234,17 +141,6 @@ public class MyPlayer extends Player {
 				if (b.getState(x, y) == c)
 					++amount;
 		return amount;
-	}
-
-	/**
-	 * Funkcja zwraca liczbę zbitych pionow gracza o okreslonym kolorze w danym
-	 * ruchu
-	 */
-	public int lostPawns(Board board1, Board board2, Color color) {
-		int beforeMove = this.count(color, board1);
-		int afterMove = this.count(color, board2);
-
-		return beforeMove - afterMove;
 	}
 
 	/**
