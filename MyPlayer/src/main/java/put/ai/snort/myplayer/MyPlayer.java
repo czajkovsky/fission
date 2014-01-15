@@ -32,23 +32,17 @@ public class MyPlayer extends Player {
                 MyPlayerTimer.initTimer(getTime());
                 initColors();
                 
-                int current_level = 1; // glebokosc przegladania
-                long iter_start;
-                long last_iter_duration = 0;
-                
+                int current_level = 1; // glebokosc przegladania     
                 int board_size = b.getSize() * b.getSize();
                 
                 MyPlayerResult tmp_result, final_result = new MyPlayerResult(-INF, null);
 
                 while(MyPlayerTimer.timeLeft() > time_stock) {
-                        iter_start = MyPlayerTimer.timeLeft();
-                        tmp_result = alphaBeta(b, current_level, -INF, INF, true, my_color);
-                        last_iter_duration = iter_start - MyPlayerTimer.timeLeft();
+                        tmp_result = alphaBeta(b, current_level, -INF, INF, my_color);
                         if(current_level <= board_size && MyPlayerTimer.timeLeft() > time_stock) {
                                 final_result = tmp_result;
-                                if (final_result.returnValue() > board_size) {
-                                        return final_result.returnMove();
-                                }
+                                if (final_result.returnValue() > board_size) 
+                                        return final_result.returnMove();                             
                         }
                         current_level++;
                 }
@@ -60,7 +54,7 @@ public class MyPlayer extends Player {
                 opponent_color = getOpponent(my_color);
         }
 
-        public MyPlayerResult alphaBeta(Board board, int level, int alpha, int beta, boolean initial, Color current_color) {
+        public MyPlayerResult alphaBeta(Board board, int level, int alpha, int beta, Color current_color) {
 
                 MyPlayerResult result = new MyPlayerResult(INF - 1, null);
                 
@@ -97,7 +91,7 @@ public class MyPlayer extends Player {
                         else { // idziemy dalej
                         
                                 if (current_color == my_color) { // MAX type
-                                        tmp_result = alphaBeta(b, level, alpha, beta, false, opponent_color);
+                                        tmp_result = alphaBeta(b, level, alpha, beta, opponent_color);
                                         
                                         if(tmp_result.returnValue() > alpha) {
                                                 alpha = tmp_result.returnValue();
@@ -106,7 +100,7 @@ public class MyPlayer extends Player {
                                                 
                                 }
                                 else { // MIN TYPE
-                                        tmp_result = alphaBeta(b, level, alpha, beta, false, my_color);
+                                        tmp_result = alphaBeta(b, level, alpha, beta, my_color);
                                         
                                         if(tmp_result.returnValue() < beta) {
                                                 beta = tmp_result.returnValue();
